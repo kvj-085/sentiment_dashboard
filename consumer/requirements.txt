@@ -1,0 +1,8 @@
+kafka-python==2.0.2
+# Latest transformers and tokenizers with Python 3.13 wheel support
+transformers==4.47.1
+# tokenizers 0.21+ has prebuilt wheels for Python 3.13 on Windows
+tokenizers==0.21.0
+# PyTorch 2.6.0 has cp313 wheels for Windows
+torch==2.6.0
+psycopg[binary]==3.2.2
