@@ -18,11 +18,12 @@ app.add_middleware(
 )
 
 # Database configuration
+import os
 DB_CONFIG = {
-    'host': 'localhost',
-    'database': 'sentiment_db',
-    'user': 'postgres',
-    'password': 'postgres'
+    'host': os.getenv('DB_HOST', 'localhost'),
+    'dbname': os.getenv('DB_NAME', 'sentiment_db'),
+    'user': os.getenv('DB_USER', 'postgres'),
+    'password': os.getenv('DB_PASSWORD', 'postgres')
 }
 
 class SentimentResult(BaseModel):

@@ -1,4 +1,5 @@
 import json
+import os
 from kafka import KafkaConsumer
 from transformers import pipeline
 import psycopg
@@ -10,9 +11,12 @@ logger = logging.getLogger(__name__)
 
 class SentimentConsumer:
     def __init__(self, 
-                 bootstrap_servers='localhost:9092',
+                 bootstrap_servers=None,
                  topic='sentiment-data',
                  db_config=None):
+        
+        if bootstrap_servers is None:
+            bootstrap_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
         
         self.consumer = KafkaConsumer(
             topic,
@@ -32,10 +36,10 @@ class SentimentConsumer:
         
         # Database configuration
         self.db_config = db_config or {
-            'host': 'localhost',
-            'database': 'sentiment_db',
-            'user': 'postgres',
-            'password': 'postgres'
+            'host': os.getenv('DB_HOST', 'localhost'),
+            'dbname': os.getenv('DB_NAME', 'sentiment_db'),
+            'user': os.getenv('DB_USER', 'postgres'),
+            'password': os.getenv('DB_PASSWORD', 'postgres')
         }
         
         self.init_database()

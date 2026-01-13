@@ -1,6 +1,7 @@
 import json
 import time
 import random
+import os
 from kafka import KafkaProducer
 from datetime import datetime
 import logging
@@ -9,7 +10,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class SentimentProducer:
-    def __init__(self, bootstrap_servers='localhost:9092', topic='sentiment-data'):
+    def __init__(self, bootstrap_servers=None, topic='sentiment-data'):
+        if bootstrap_servers is None:
+            bootstrap_servers = os.getenv('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092')
         self.producer = KafkaProducer(
             bootstrap_servers=bootstrap_servers,
             value_serializer=lambda v: json.dumps(v).encode('utf-8')
