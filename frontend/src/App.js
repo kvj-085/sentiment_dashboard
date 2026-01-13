@@ -63,9 +63,9 @@ function App() {
     datasets: [
       {
         data: [stats.positive_count, stats.negative_count],
-        backgroundColor: ['#10b981', '#ef4444'],
-        borderColor: ['#059669', '#dc2626'],
-        borderWidth: 1,
+        backgroundColor: ['#00ff88', '#ff0055'],
+        borderColor: ['#00ffff', '#ff00aa'],
+        borderWidth: 2,
       },
     ],
   } : null;
@@ -76,10 +76,37 @@ function App() {
       {
         label: 'Sentiment Count',
         data: [stats.positive_count, stats.negative_count],
-        backgroundColor: ['rgba(16, 185, 129, 0.8)', 'rgba(239, 68, 68, 0.8)'],
+        backgroundColor: ['rgba(0, 255, 136, 0.7)', 'rgba(255, 0, 85, 0.7)'],
+        borderColor: ['#00ff88', '#ff0055'],
+        borderWidth: 2,
+        borderRadius: 8,
       },
     ],
   } : null;
+
+  // Dark neon theme for charts
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: {
+        labels: {
+          color: '#e0e0e0',
+          font: { size: 13, weight: 600 },
+        },
+      },
+    },
+    scales: {
+      y: {
+        ticks: { color: '#a0a0b0' },
+        grid: { color: 'rgba(0, 255, 255, 0.05)' },
+      },
+      x: {
+        ticks: { color: '#a0a0b0' },
+        grid: { color: 'rgba(0, 255, 255, 0.05)' },
+      },
+    },
+  };
 
   if (loading) {
     return (
@@ -92,7 +119,7 @@ function App() {
   return (
     <div className="App">
       <header className="header">
-        <h1>🎭 Real-Time Sentiment Dashboard</h1>
+        <h1>🎭Real-Time Sentiment Dashboard</h1>
         <p>Analyzing sentiment trends in real-time</p>
       </header>
 
@@ -121,11 +148,11 @@ function App() {
         <div className="charts-grid">
           <div className="chart-card">
             <h2>Sentiment Distribution</h2>
-            {pieData && <Pie data={pieData} options={{ maintainAspectRatio: true }} />}
+            {pieData && <Pie data={pieData} options={chartOptions} />}
           </div>
           <div className="chart-card">
             <h2>Sentiment Comparison</h2>
-            {barData && <Bar data={barData} options={{ maintainAspectRatio: true }} />}
+            {barData && <Bar data={barData} options={chartOptions} />}
           </div>
         </div>
 
