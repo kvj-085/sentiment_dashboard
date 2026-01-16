@@ -4,7 +4,7 @@ A real-time sentiment analysis pipeline that processes text data through Apache 
 
 ## What This Project Does
 
-1. **Ingests text data** from various sources (fake or real news)
+1. **Ingests text data** from various sources (mock, news, YouTube, IMDb)
 2. **Processes through Kafka** message queue for scalability
 3. **Analyzes sentiment** using HuggingFace DistilBERT model
 4. **Stores results** in PostgreSQL database
@@ -18,9 +18,10 @@ A real-time sentiment analysis pipeline that processes text data through Apache 
 - **Database**: PostgreSQL
 - **ML/NLP**: HuggingFace Transformers (DistilBERT)
 - **Containerization**: Docker & Docker Compose
-- **Data Source**: 
+- **Data Sources**: 
   - `main` branch: Mock/fake data
-  - `feat/newsapi-integration` branch: Real NewsAPI articles
+  - `feat/newsapi-integration` branch: Real news articles
+  - `feat/youtube-comments` branch: YouTube video comments
 
 ## Project Structure
 
@@ -48,13 +49,36 @@ sentiment_dashboard/
 ### `feat/newsapi-integration` - Real News Data
 **Use this to analyze real news articles from NewsAPI.**
 
+**Why NewsAPI?** Provides structured, reliable news content from diverse sources, ideal for analyzing sentiment trends across current events and topics.
+
 - Fetches real articles from NewsAPI (free tier: 100 articles/day)
 - Producer runs locally on your machine
 - Backend services run in Docker
 - Requires NewsAPI key (free signup at https://newsapi.org/)
 
----
+### `feat/youtube-comments` - YouTube Comments
+**Use this to analyze YouTube video comments in real-time.**
 
+**Why YouTube?** Captures real-time, streaming behavior from users reacting to video content. Comments are spontaneous and emotion-rich, providing excellent sentiment signals for live discussions.
+
+- Fetches comments from videos based on search queries
+- Uses YouTube Data API v3
+- Monitors multiple search terms (AI, tech, reviews)
+- Producer runs locally on your machine
+- Requires YouTube API key (free from Google Cloud Console)
+
+**YouTube API Quotas:**
+- Free tier: 10,000 units/day
+- Each search = 100 units
+- Each comment fetch = 1 unit
+- Our setup uses ~300-400 units per 15-min cycle (safe for daily use)
+
+---
+## Demo
+
+[Watch Sentiment Dashboard Demo](Screen%20Recording%202026-01-16%20134006.mp4)
+
+---
 ## Setup & Usage
 
 ### Prerequisites
@@ -100,7 +124,7 @@ docker-compose up
 
 ---
 
-### Option 2: NewsAPI Branch - Real Data (Hybrid Setup)
+### Option 2: NewsAPI Branch - Real News Data (Hybrid Setup)
 
 **This approach runs backend services in Docker and producer locally on your machine.**
 
@@ -194,6 +218,90 @@ INFO:__main__:Sent message: Excellent service desk for ITIL organizations...
 
 ---
 
+### Option 3: YouTube Comments Branch - Real-Time User Reactions
+
+**Captures live user sentiment from YouTube video comments.**
+
+#### Step 1: Setup YouTube API Key
+
+1. Go to https://console.cloud.google.com/
+2. Create a new project (or select existing)
+3. Enable "YouTube Data API v3"
+4. Go to "Credentials" → "Create Credentials" → "API Key"
+5. Copy the API key
+
+#### Step 2: Clone and Configure
+
+```bash
+git clone <repo>
+cd sentiment_dashboard
+git checkout feat/youtube-comments
+```
+
+Create `.env` file in project root:
+```
+YOUTUBE_API_KEY=your_youtube_api_key_here
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+```
+
+#### Step 3: Start Backend Services (Docker)
+
+```powershell
+docker-compose up kafka zookeeper postgres consumer backend frontend
+```
+
+#### Step 4: Setup and Run Producer Locally
+
+**Terminal 2:**
+
+```powershell
+cd producer
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+**Install dependencies:**
+```
+kafka-python==2.0.3
+google-api-python-client==2.108.0
+python-dotenv==1.0.0
+```
+
+**Run producer:**
+```powershell
+python producer.py
+```
+
+**Expected output:**
+```
+INFO:__main__:YouTube producer initialized successfully
+INFO:__main__:Searching videos for: AI technology
+INFO:__main__:Fetching comments from: Amazing AI Breakthrough...
+INFO:__main__:Sent comment: This is incredible! The future is here...
+INFO:__main__:Next fetch in 15 minutes...
+```
+
+**What happens:**
+- Producer searches for videos based on queries: `['AI technology', 'machine learning', 'tech review']`
+- Fetches top comments from recent videos
+- Sends comments to Kafka every 15 minutes
+- Consumer analyzes sentiment from user reactions
+
+**YouTube API Usage:**
+- **Free tier**: 10,000 units/day
+- **Each search**: 100 units
+- **Each comment fetch**: 1 unit
+- **Our setup**: ~300-400 units per 15-min cycle
+- **Daily cost**: ~9,600 units (within free tier)
+
+**Customize queries** in `producer.py`:
+```python
+self.search_queries = ['AI technology', 'machine learning', 'tech review']
+```
+
+---
+
 ## Architecture Comparison
 
 ### Main Branch (Mock Data)
@@ -202,7 +310,7 @@ Producer (Docker) → Kafka (Docker) → Consumer (Docker) → PostgreSQL (Docke
 All in Docker using internal network on kafka:29092
 ```
 
-### NewsAPI Branch (Real Data)
+### NewsAPI/YouTube/IMDb Branches (Real Data)
 ```
 Producer (Local Machine) ──→ Kafka (Docker) ←── Consumer (Docker) → PostgreSQL (Docker) → API (Docker) → Frontend (Docker)
                     localhost:9092        kafka:29092
@@ -238,12 +346,21 @@ docker-compose down -v
 
 **Consumer not analyzing messages?**
 - Check consumer logs: `docker-compose logs consumer`
-- Verify producer is sending: `docker-compose logs producer`
+- Verify producer is sending: Check producer terminal output
 
 **Frontend shows 0 analyzed?**
 - Wait 30 seconds for consumer to process first batch
 - Check backend API: `http://localhost:8000/api/sentiments/stats?hours=24`
 
+**YouTube API quota exceeded?**
+- Check usage: https://console.cloud.google.com/apis/api/youtube.googleapis.com/quotas
+- Reduce search queries or increase fetch interval in producer
+
+**IMDb scraping blocked?**
+- Add delays between requests in producer
+- Check if IMDb structure changed (may need to update scraper)
+
 ## License
 
 MIT
+
