@@ -76,7 +76,10 @@ sentiment_dashboard/
 ---
 ## Demo
 
-[Watch Sentiment Dashboard Demo](Screen%20Recording%202026-01-16%20134006.mp4)
+<video width="100%" controls>
+  <source src="Screen Recording 2026-01-16 134006.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ---
 ## Setup & Usage
