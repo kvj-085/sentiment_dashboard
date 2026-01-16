@@ -76,8 +76,7 @@ sentiment_dashboard/
 ---
 ## Demo
 
-
-https://github.com/user-attachments/assets/87ae7a8e-cd88-48c1-88de-1f92df18abd0
+https://github.com/user-attachments/assets/15a1fdc7-d847-43d5-bcfd-7611972111bc
 
 ---
 ## Setup & Usage
